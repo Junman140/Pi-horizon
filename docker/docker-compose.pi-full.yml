@@ -25,6 +25,12 @@ services:
     volumes:
       - ./pi-testnet-core.cfg:/stellar-core.cfg:ro
       - pi-core-buckets:/opt/stellar/core/buckets
+    command:
+      - /bin/sh
+      - -c
+      - |
+        stellar-core new-db --conf /stellar-core.cfg 2>/dev/null || true
+        exec stellar-core run --conf /stellar-core.cfg
 
   horizon-postgres:
     platform: linux/amd64
