@@ -87,9 +87,8 @@ var (
 	PiMainnetPassphrase = "Pi Network"
 
 	// PiTestnetHistoryArchiveURLs is a list of history archive URLs for Pi Network testnet.
-	// Replace these with actual Pi Network testnet history archive URLs from your Pi Node config.
 	PiTestnetHistoryArchiveURLs = []string{
-		"https://history.testnet.minepi.com/",
+		"https://history.temp.testnet2.minepi.com/",
 	}
 
 	// PiMainnetHistoryArchiveURLs is a list of history archive URLs for Pi Network mainnet.
