@@ -30,12 +30,8 @@ services:
       - ./pi-testnet-core.cfg:/stellar-core.cfg:ro
     environment:
       - NODE_SEED=SDHFHDWSCKHV3KNPQFQDNE4Y5HMDUT26A5AICWQCDG6JBMUBQYCHUXAE
-    volumes:
-      - ./pi-testnet-core.cfg:/stellar-core.cfg:ro
-      - bootstrap.sh:/bootstrap.sh:ro
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - "sh /bootstrap.sh"
+    entrypoint: ["stellar-core"]
+    command: ["run", "--conf", "/stellar-core.cfg"]
 
   horizon-postgres:
     platform: linux/amd64
