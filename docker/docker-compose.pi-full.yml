@@ -1,0 +1,72 @@
+services:
+  # PostgreSQL for stellar-core (ledger state)
+  core-postgres:
+    platform: linux/amd64
+    image: postgres:12-bullseye
+    restart: on-failure
+    environment:
+      POSTGRES_USER: stellar
+      POSTGRES_PASSWORD: stellar
+      POSTGRES_DB: core
+    expose:
+      - "5432"
+    volumes:
+      - core-db-data:/var/lib/postgresql/data
+
+  pi-core:
+    platform: linux/amd64
+    depends_on:
+      - core-postgres
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.pi-core
+      args:
+        STELLAR_CORE_VERSION: ${STELLAR_CORE_VERSION:-*}
+    restart: on-failure
+    ports:
+      - "11626:11626"
+      - "31402:31402"
+    volumes:
+      - ./pi-testnet-core.cfg:/stellar-core.cfg:ro
+      - pi-core-buckets:/opt/stellar/core/buckets
+
+  horizon-postgres:
+    platform: linux/amd64
+    image: postgres:12-bullseye
+    restart: on-failure
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: horizon
+    expose:
+      - "5432"
+    volumes:
+      - horizon-db-data:/var/lib/postgresql/data
+
+  horizon:
+    platform: linux/amd64
+    depends_on:
+      - horizon-postgres
+      - pi-core
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+      args:
+        STELLAR_CORE_VERSION: ${STELLAR_CORE_VERSION:-*}
+    restart: on-failure
+    ports:
+      - "8000:8000"
+    environment:
+      - NETWORK=pitestnet
+      - DATABASE_URL=postgres://postgres@horizon-postgres:5432/horizon?sslmode=disable
+      - STELLAR_CORE_URL=http://pi-core:11626
+      - INGEST=true
+      - DISABLE_TX_SUB=true
+      - PER_HOUR_RATE_LIMIT=0
+    command: ["--apply-migrations"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  core-db-data:
+  pi-core-buckets:
+  horizon-db-data:
