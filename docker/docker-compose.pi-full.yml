@@ -1,5 +1,4 @@
 services:
-  # PostgreSQL for stellar-core (ledger state)
   core-postgres:
     platform: linux/amd64
     image: postgres:12-bullseye
@@ -14,21 +13,27 @@ services:
       - core-db-data:/var/lib/postgresql/data
 
   pi-core:
-    image: stellar/stellar-core:23
+    image: pinetwork/pi-node-docker:community-v1.1-p23.0.1
     platform: linux/amd64
     depends_on:
       - core-postgres
     restart: on-failure
     ports:
       - "11626:11626"
+    environment:
+      - PUBLIC_HTTP_PORT=true
+      - PEER_PORT=31402
+      - NETWORK_PASSPHRASE=Pi Testnet
+      - DATABASE_URL=postgresql://dbname=core host=core-postgres user=stellar password=stellar port=5432
+      - CATCHUP_COMPLETE=false
+      - CATCHUP_RECENT=256
+      - NODE_IS_VALIDATOR=false
+      - UNSAFE_QUORUM=false
+      - FAILURE_SAFETY=-1
+      - NODE_HOME_DOMAIN=pi-core-team
     volumes:
-      - ./pi-testnet-core.cfg:/stellar-core.cfg:ro
+      - ./pi-testnet-core.cfg:/opt/stellar/core/etc/stellar-core.cfg:ro
       - pi-core-buckets:/opt/stellar/core/buckets
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        stellar-core new-db --conf /stellar-core.cfg 2>/dev/null; true
-        exec stellar-core run --conf /stellar-core.cfg
 
   horizon-postgres:
     platform: linux/amd64
