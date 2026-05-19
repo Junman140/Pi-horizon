@@ -929,6 +929,17 @@ func setCaptiveCoreConfiguration(config *Config, options ApplyOptions) error {
 		if err != nil {
 			return errors.Wrap(err, "invalid captive core toml file")
 		}
+		// Pi Network needs a quorum set for captive core to start (stellar-core 26+ requirement)
+		if config.Network == PiTestnet || config.Network == PiMainnet {
+			config.CaptiveCoreToml.UnsafeQuorum = true
+			config.CaptiveCoreToml.FailureSafety = 0
+			config.CaptiveCoreToml.QuorumSetEntries = map[string]ledgerbackend.QuorumSet{
+				"QUORUM_SET": {
+					ThresholdPercent: 100,
+					Validators:       []string{"GCZBOIAY4HLKAJVNJORXZOZRAY2BJDBZHKPBHZCRAIUR5IHC2UHBGCQR"},
+				},
+			}
+		}
 	} else if len(defaultCaptiveCoreConfig) != 0 {
 		config.CaptiveCoreToml, err = ledgerbackend.NewCaptiveCoreTomlFromData(defaultCaptiveCoreConfig,
 			config.CaptiveCoreTomlParams)
