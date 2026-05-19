@@ -25,7 +25,7 @@ services:
     restart: on-failure
     ports:
       - "11626:11626"
-      - "31402:31402"
+      - "31403:31403"
     volumes:
       - ./pi-testnet-core.cfg:/stellar-core.cfg:ro
       - pi-core-buckets:/opt/stellar/core/buckets
