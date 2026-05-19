@@ -1,4 +1,14 @@
 services:
+  pi-core:
+    image: pinetwork/pi-node-docker:community-v1.1-p23.0.1
+    platform: linux/amd64
+    restart: on-failure
+    ports:
+      - "11626:11626"
+    environment:
+      - PUBLIC_HTTP_PORT=true
+    command: ["--testnet2"]
+
   horizon-postgres:
     platform: linux/amd64
     image: postgres:12-bullseye
@@ -15,6 +25,7 @@ services:
     platform: linux/amd64
     depends_on:
       - horizon-postgres
+      - pi-core
     build:
       context: ..
       dockerfile: docker/Dockerfile.dev
@@ -26,7 +37,7 @@ services:
     environment:
       - NETWORK=pitestnet
       - DATABASE_URL=postgres://postgres@horizon-postgres:5432/horizon?sslmode=disable
-      - STELLAR_CORE_URL=http://testnet2:11626
+      - STELLAR_CORE_URL=http://pi-core:11626
       - STELLAR_CORE_VERSION=23*
       - INGEST=true
       - DISABLE_TX_SUB=true
