@@ -25,11 +25,10 @@ services:
     volumes:
       - ./pi-testnet-core.cfg:/stellar-core.cfg:ro
       - pi-core-buckets:/opt/stellar/core/buckets
+    entrypoint: ["/bin/sh", "-c"]
     command:
-      - /bin/sh
-      - -c
       - |
-        stellar-core new-db --conf /stellar-core.cfg 2>/dev/null || true
+        stellar-core new-db --conf /stellar-core.cfg 2>/dev/null; true
         exec stellar-core run --conf /stellar-core.cfg
 
   horizon-postgres:
