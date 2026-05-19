@@ -1,31 +1,4 @@
 services:
-  core-postgres:
-    platform: linux/amd64
-    image: postgres:12-bullseye
-    restart: on-failure
-    environment:
-      POSTGRES_USER: stellar
-      POSTGRES_PASSWORD: stellar
-      POSTGRES_DB: core
-    expose:
-      - "5432"
-    volumes:
-      - core-db-data:/var/lib/postgresql/data
-
-  pi-core:
-    image: stellar/stellar-core:23
-    platform: linux/amd64
-    depends_on:
-      - core-postgres
-    restart: on-failure
-    ports:
-      - "11626:11626"
-    volumes:
-      - ./pi-testnet-core.cfg:/stellar-core.cfg:ro
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - "stellar-core new-db --conf /stellar-core.cfg 2>/dev/null || true; stellar-core run --conf /stellar-core.cfg"
-
   horizon-postgres:
     platform: linux/amd64
     image: postgres:12-bullseye
@@ -42,7 +15,6 @@ services:
     platform: linux/amd64
     depends_on:
       - horizon-postgres
-      - pi-core
     build:
       context: ..
       dockerfile: docker/Dockerfile.dev
@@ -54,7 +26,7 @@ services:
     environment:
       - NETWORK=pitestnet
       - DATABASE_URL=postgres://postgres@horizon-postgres:5432/horizon?sslmode=disable
-      - STELLAR_CORE_URL=http://pi-core:11626
+      - STELLAR_CORE_URL=http://testnet2:11626
       - STELLAR_CORE_VERSION=23*
       - INGEST=true
       - DISABLE_TX_SUB=true
@@ -64,5 +36,4 @@ services:
       - "host.docker.internal:host-gateway"
 
 volumes:
-  core-db-data:
   horizon-db-data:
