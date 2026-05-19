@@ -14,18 +14,14 @@ services:
       - core-db-data:/var/lib/postgresql/data
 
   pi-core:
+    image: stellar/stellar-core:23
     platform: linux/amd64
     depends_on:
       - core-postgres
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.pi-core
-      args:
-        STELLAR_CORE_VERSION: ${STELLAR_CORE_VERSION:-*}
     restart: on-failure
     ports:
       - "11626:11626"
-      - "31403:31403"
+      - "31410:31410"
     volumes:
       - ./pi-testnet-core.cfg:/stellar-core.cfg:ro
       - pi-core-buckets:/opt/stellar/core/buckets
@@ -51,7 +47,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.dev
       args:
-        STELLAR_CORE_VERSION: ${STELLAR_CORE_VERSION:-*}
+        STELLAR_CORE_VERSION: "23*"
     restart: on-failure
     ports:
       - "8000:8000"
@@ -59,6 +55,7 @@ services:
       - NETWORK=pitestnet
       - DATABASE_URL=postgres://postgres@horizon-postgres:5432/horizon?sslmode=disable
       - STELLAR_CORE_URL=http://pi-core:11626
+      - STELLAR_CORE_VERSION=23*
       - INGEST=true
       - DISABLE_TX_SUB=true
       - PER_HOUR_RATE_LIMIT=0
