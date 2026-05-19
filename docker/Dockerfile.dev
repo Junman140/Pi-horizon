@@ -22,6 +22,6 @@ RUN echo "deb https://apt.stellar.org noble unstable" >/etc/apt/sources.list.d/S
 RUN apt-get update && apt-get install -y stellar-core=${STELLAR_CORE_VERSION}
 RUN apt-get clean
 
-COPY --from=builder /go/bin/horizon ./
+COPY --from=builder /go/bin/stellar-horizon ./
 
-ENTRYPOINT ["./horizon"]
+ENTRYPOINT ["./stellar-horizon"]
