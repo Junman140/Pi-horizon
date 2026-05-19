@@ -82,8 +82,9 @@ const (
 var (
 	// PiTestnetPassphrase is the passphrase for the Pi Network testnet
 	PiTestnetPassphrase = "Pi Testnet"
-	// PiMainnetPassphrase is the passphrase for the Pi Network mainnet
-	PiMainnetPassphrase = "Pi Mainnet"
+	// PiMainnetPassphrase is the passphrase for the Pi Network mainnet.
+	// Source: https://github.com/PiCoreTeam/pi-node-docker/blob/master/pubnet/core/etc/stellar-core.cfg
+	PiMainnetPassphrase = "Pi Network"
 
 	// PiTestnetHistoryArchiveURLs is a list of history archive URLs for Pi Network testnet.
 	// Replace these with actual Pi Network testnet history archive URLs from your Pi Node config.
