@@ -69,6 +69,10 @@ const (
 	StellarTestnet = "testnet"
 	// StellarFuturenet is a constant representing the Stellar future network
 	StellarFuturenet = "futurenet"
+	// PiTestnet is a constant representing the Pi Network test network
+	PiTestnet = "pitestnet"
+	// PiMainnet is a constant representing the Pi Network main network
+	PiMainnet = "pimainnet"
 
 	defaultMaxConcurrentRequests = uint(1000)
 	defaultMaxHTTPRequestSize    = uint(200 * 1024)
@@ -76,6 +80,23 @@ const (
 )
 
 var (
+	// PiTestnetPassphrase is the passphrase for the Pi Network testnet
+	PiTestnetPassphrase = "Pi Testnet"
+	// PiMainnetPassphrase is the passphrase for the Pi Network mainnet
+	PiMainnetPassphrase = "Pi Mainnet"
+
+	// PiTestnetHistoryArchiveURLs is a list of history archive URLs for Pi Network testnet.
+	// Replace these with actual Pi Network testnet history archive URLs from your Pi Node config.
+	PiTestnetHistoryArchiveURLs = []string{
+		"https://history.testnet.minepi.com/",
+	}
+
+	// PiMainnetHistoryArchiveURLs is a list of history archive URLs for Pi Network mainnet.
+	// Replace these with actual Pi Network mainnet history archive URLs from your Pi Node config.
+	PiMainnetHistoryArchiveURLs = []string{
+		"https://history.minepi.com/",
+	}
+
 	IngestCmd        = "ingest"
 	RecordMetricsCmd = "record-metrics"
 	DbCmd            = "db"
@@ -791,16 +812,17 @@ func Flags() (*Config, support.ConfigOptions) {
 			Required:  false,
 			CustomSetValue: func(co *support.ConfigOption) error {
 				val := viper.GetString(co.Name)
-				if val != "" && val != StellarPubnet && val != StellarTestnet && val != StellarFuturenet {
-					return fmt.Errorf("invalid network %s. Use '%s', '%s', or '%s'",
-						val, StellarPubnet, StellarTestnet, StellarFuturenet)
+				if val != "" && val != StellarPubnet && val != StellarTestnet && val != StellarFuturenet &&
+					val != PiTestnet && val != PiMainnet {
+					return fmt.Errorf("invalid network %s. Use '%s', '%s', '%s', '%s', or '%s'",
+						val, StellarPubnet, StellarTestnet, StellarFuturenet, PiTestnet, PiMainnet)
 				}
 				*co.ConfigKey.(*string) = val
 				return nil
 			},
-			Usage: fmt.Sprintf("stellar public network, either '%s', '%s', or '%s'."+
+			Usage: fmt.Sprintf("stellar public network, either '%s', '%s', '%s', '%s', or '%s'."+
 				" It automatically configures network settings, including %s, %s, and %s.",
-				StellarPubnet, StellarTestnet, StellarFuturenet, NetworkPassphraseFlagName,
+				StellarPubnet, StellarTestnet, StellarFuturenet, PiTestnet, PiMainnet, NetworkPassphraseFlagName,
 				HistoryArchiveURLsFlagName, CaptiveCoreConfigPathName),
 			UsedInCommands: IngestionCommands,
 		},
@@ -882,6 +904,10 @@ func setCaptiveCoreConfiguration(config *Config, options ApplyOptions) error {
 		defaultCaptiveCoreConfig = ledgerbackend.TestnetDefaultConfig
 	case StellarFuturenet:
 		defaultCaptiveCoreConfig = ledgerbackend.FuturenetDefaultConfig
+	case PiTestnet, PiMainnet:
+		// Pi Network uses standard stellar-core; use minimal config if no
+		// captive core config file is provided.
+		options.RequireCaptiveCoreFullConfig = false
 	}
 
 	config.CaptiveCoreTomlParams.CoreBinaryPath = config.CaptiveCoreBinaryPath
@@ -897,7 +923,8 @@ func setCaptiveCoreConfiguration(config *Config, options ApplyOptions) error {
 		}
 	} else if !options.RequireCaptiveCoreFullConfig {
 		// Creates a minimal captive-core config (without quorum information), just enough to run captive core.
-		// This is used by certain database commands, such as `reingest and fill-gaps, to reingest historical data.
+		// This is used by certain database commands, such as `reingest` and `fill-gaps`, to reingest historical data.
+		// Also used by Pi Network deployments that may not have a full captive core config.
 		config.CaptiveCoreToml, err = ledgerbackend.NewCaptiveCoreToml(config.CaptiveCoreTomlParams)
 		if err != nil {
 			return errors.Wrap(err, "invalid captive core toml file")
@@ -909,6 +936,12 @@ func setCaptiveCoreConfiguration(config *Config, options ApplyOptions) error {
 			return errors.Wrap(err, "invalid captive core toml file")
 		}
 	} else {
+		// For Pi Network, provide a helpful error message
+		if config.Network == PiTestnet || config.Network == PiMainnet {
+			return fmt.Errorf("invalid config: Pi Network requires either --%s or --%s to be set."+
+				" Alternatively, set the --%s parameter to use a minimal captive core config",
+				CaptiveCoreConfigPathName, NetworkFlagName)
+		}
 		return fmt.Errorf("invalid config: captive core requires that --%s is set or you can set the --%s "+
 			"parameter to use the default captive core config", CaptiveCoreConfigPathName, NetworkFlagName)
 	}
@@ -1032,6 +1065,12 @@ func setNetworkConfiguration(config *Config) error {
 		case StellarFuturenet:
 			config.NetworkPassphrase = network.FutureNetworkPassphrase
 			config.HistoryArchiveURLs = network.FutureNetworkhistoryArchiveURLs
+		case PiTestnet:
+			config.NetworkPassphrase = PiTestnetPassphrase
+			config.HistoryArchiveURLs = PiTestnetHistoryArchiveURLs
+		case PiMainnet:
+			config.NetworkPassphrase = PiMainnetPassphrase
+			config.HistoryArchiveURLs = PiMainnetHistoryArchiveURLs
 		default:
 			return fmt.Errorf("no default configuration found for network %s", config.Network)
 		}

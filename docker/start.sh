@@ -24,13 +24,18 @@ case $NETWORK in
     echo "running on public network"
     ;;
 
+  pitestnet)
+    DOCKER_FLAGS="-f ${DOCKER_DIR}docker-compose.yml -f ${DOCKER_DIR}docker-compose.pi-testnet.yml"
+    echo "running on Pi test network"
+    ;;
+
   testnet)
     DOCKER_FLAGS="-f ${DOCKER_DIR}docker-compose.yml"
     echo "running on test network"
     ;;
 
   *)
-    echo  "$1 is not a supported option "
+    echo  "$1 is not a supported option (use: standalone, pubnet, testnet, pitestnet)"
     exit 1
     ;;
 esac
