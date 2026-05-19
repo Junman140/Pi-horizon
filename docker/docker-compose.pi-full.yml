@@ -30,8 +30,9 @@ services:
       - ./pi-testnet-core.cfg:/stellar-core.cfg:ro
     environment:
       - NODE_SEED=SDHFHDWSCKHV3KNPQFQDNE4Y5HMDUT26A5AICWQCDG6JBMUBQYCHUXAE
-    entrypoint: ["stellar-core"]
-    command: ["run", "--conf", "/stellar-core.cfg"]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "mkdir -p /opt/stellar/core/buckets && rm -rf /opt/stellar/core/buckets/* 2>/dev/null; exec stellar-core run --conf /stellar-core.cfg"
 
   horizon-postgres:
     platform: linux/amd64
