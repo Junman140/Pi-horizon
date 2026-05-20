@@ -31,3 +31,5 @@ debug
 *.lock
 pi-node-docker
 /pi-node-docker
+pi-rpc
+/pi-rpc
