@@ -28,7 +28,7 @@ services:
     ports:
       - "11626:11626"
     volumes:
-      - ./pi-testnet-core.cfg:/stellar-core.cfg:ro
+      - ./pi-mainnet-core.cfg:/stellar-core.cfg:ro
     environment:
       - NODE_SEED=SDHFHDWSCKHV3KNPQFQDNE4Y5HMDUT26A5AICWQCDG6JBMUBQYCHUXAE
     entrypoint: ["/bin/sh", "-c"]
@@ -60,7 +60,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - NETWORK=pitestnet
+      - NETWORK=pimainnet
       - DATABASE_URL=postgres://postgres@horizon-postgres:5432/horizon?sslmode=disable
       - STELLAR_CORE_URL=http://pi-core:11626
       - STELLAR_CORE_VERSION=23*
