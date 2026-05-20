@@ -29,3 +29,5 @@ debug
 *.db
 *.conf
 *.lock
+pi-node-docker
+/pi-node-docker

@@ -1,7 +1,7 @@
 services:
   core-postgres:
     platform: linux/amd64
-    image: postgres:12-bullseye
+    image: postgres:16-bookworm
     restart: on-failure
     environment:
       POSTGRES_USER: stellar
@@ -35,7 +35,7 @@ services:
 
   horizon-postgres:
     platform: linux/amd64
-    image: postgres:12-bullseye
+    image: postgres:16-bookworm
     restart: on-failure
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust

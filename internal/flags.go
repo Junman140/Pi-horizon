@@ -69,7 +69,11 @@ const (
 	StellarTestnet = "testnet"
 	// StellarFuturenet is a constant representing the Stellar future network
 	StellarFuturenet = "futurenet"
-	// PiTestnet is a constant representing the Pi Network test network
+	// PiTestnet1 is a constant representing the Pi Network original testnet (testnet1)
+	PiTestnet1 = "pitestnet1"
+	// PiTestnet2 is a constant representing the Pi Network testnet2
+	PiTestnet2 = "pitestnet2"
+	// PiTestnet is DEPRECATED: kept for backward compatibility, maps to pitestnet2
 	PiTestnet = "pitestnet"
 	// PiMainnet is a constant representing the Pi Network main network
 	PiMainnet = "pimainnet"
@@ -86,15 +90,23 @@ var (
 	// Source: https://github.com/PiCoreTeam/pi-node-docker/blob/master/pubnet/core/etc/stellar-core.cfg
 	PiMainnetPassphrase = "Pi Network"
 
-	// PiTestnetHistoryArchiveURLs is a list of history archive URLs for Pi Network testnet.
-	PiTestnetHistoryArchiveURLs = []string{
+	// PiTestnet1HistoryArchiveURLs is a list of history archive URLs for Pi Network original testnet (testnet1).
+	PiTestnet1HistoryArchiveURLs = []string{
+		"https://history.testnet.minepi.com/",
+	}
+
+	// PiTestnet2HistoryArchiveURLs is a list of history archive URLs for Pi Network testnet2.
+	PiTestnet2HistoryArchiveURLs = []string{
 		"https://history.temp.testnet2.minepi.com/",
 	}
+
+	// PiTestnetHistoryArchiveURLs is DEPRECATED: kept for backward compatibility, points to testnet2.
+	PiTestnetHistoryArchiveURLs = PiTestnet2HistoryArchiveURLs
 
 	// PiMainnetHistoryArchiveURLs is a list of history archive URLs for Pi Network mainnet.
 	// Replace these with actual Pi Network mainnet history archive URLs from your Pi Node config.
 	PiMainnetHistoryArchiveURLs = []string{
-		"https://history.minepi.com/",
+		"https://history.mainnet.minepi.com/",
 	}
 
 	IngestCmd        = "ingest"
@@ -812,17 +824,25 @@ func Flags() (*Config, support.ConfigOptions) {
 			Required:  false,
 			CustomSetValue: func(co *support.ConfigOption) error {
 				val := viper.GetString(co.Name)
+				// Map deprecated "pitestnet" to "pitestnet2" for backward compatibility
+				if val == PiTestnet {
+					stdLog.Printf(
+						"DEPRECATED - network value '%s' is deprecated. Use '%s' for Pi Testnet2 or '%s' for Pi Testnet1.",
+						PiTestnet, PiTestnet2, PiTestnet1,
+					)
+					val = PiTestnet2
+				}
 				if val != "" && val != StellarPubnet && val != StellarTestnet && val != StellarFuturenet &&
-					val != PiTestnet && val != PiMainnet {
-					return fmt.Errorf("invalid network %s. Use '%s', '%s', '%s', '%s', or '%s'",
-						val, StellarPubnet, StellarTestnet, StellarFuturenet, PiTestnet, PiMainnet)
+					val != PiTestnet1 && val != PiTestnet2 {
+					return fmt.Errorf("invalid network %s. Use '%s', '%s', '%s', '%s', '%s', or '%s'",
+						val, StellarPubnet, StellarTestnet, StellarFuturenet, PiTestnet1, PiTestnet2, PiMainnet)
 				}
 				*co.ConfigKey.(*string) = val
 				return nil
 			},
-			Usage: fmt.Sprintf("stellar public network, either '%s', '%s', '%s', '%s', or '%s'."+
+			Usage: fmt.Sprintf("stellar public network, either '%s', '%s', '%s', '%s', '%s', or '%s'."+
 				" It automatically configures network settings, including %s, %s, and %s.",
-				StellarPubnet, StellarTestnet, StellarFuturenet, PiTestnet, PiMainnet, NetworkPassphraseFlagName,
+				StellarPubnet, StellarTestnet, StellarFuturenet, PiTestnet1, PiTestnet2, PiMainnet, NetworkPassphraseFlagName,
 				HistoryArchiveURLsFlagName, CaptiveCoreConfigPathName),
 			UsedInCommands: IngestionCommands,
 		},
@@ -904,7 +924,7 @@ func setCaptiveCoreConfiguration(config *Config, options ApplyOptions) error {
 		defaultCaptiveCoreConfig = ledgerbackend.TestnetDefaultConfig
 	case StellarFuturenet:
 		defaultCaptiveCoreConfig = ledgerbackend.FuturenetDefaultConfig
-	case PiTestnet, PiMainnet:
+	case PiTestnet1, PiTestnet2, PiMainnet:
 		// Pi Network uses standard stellar-core; use minimal config if no
 		// captive core config file is provided.
 		options.RequireCaptiveCoreFullConfig = false
@@ -930,7 +950,7 @@ func setCaptiveCoreConfiguration(config *Config, options ApplyOptions) error {
 			return errors.Wrap(err, "invalid captive core toml file")
 		}
 		// Pi Network needs a quorum set for captive core to start (stellar-core 26+ requirement)
-		if config.Network == PiTestnet || config.Network == PiMainnet {
+		if config.Network == PiTestnet1 || config.Network == PiTestnet2 || config.Network == PiMainnet {
 			config.CaptiveCoreToml.UnsafeQuorum = true
 			config.CaptiveCoreToml.FailureSafety = 0
 			config.CaptiveCoreToml.QuorumSetEntries = map[string]ledgerbackend.QuorumSet{
@@ -948,7 +968,7 @@ func setCaptiveCoreConfiguration(config *Config, options ApplyOptions) error {
 		}
 	} else {
 		// For Pi Network, provide a helpful error message
-		if config.Network == PiTestnet || config.Network == PiMainnet {
+		if config.Network == PiTestnet1 || config.Network == PiTestnet2 || config.Network == PiMainnet {
 			return fmt.Errorf("invalid config: Pi Network requires either --%s or --%s to be set."+
 				" Alternatively, set the --%s parameter to use a minimal captive core config",
 				CaptiveCoreConfigPathName, NetworkFlagName)
@@ -1076,9 +1096,12 @@ func setNetworkConfiguration(config *Config) error {
 		case StellarFuturenet:
 			config.NetworkPassphrase = network.FutureNetworkPassphrase
 			config.HistoryArchiveURLs = network.FutureNetworkhistoryArchiveURLs
-		case PiTestnet:
+		case PiTestnet1:
 			config.NetworkPassphrase = PiTestnetPassphrase
-			config.HistoryArchiveURLs = PiTestnetHistoryArchiveURLs
+			config.HistoryArchiveURLs = PiTestnet1HistoryArchiveURLs
+		case PiTestnet2:
+			config.NetworkPassphrase = PiTestnetPassphrase
+			config.HistoryArchiveURLs = PiTestnet2HistoryArchiveURLs
 		case PiMainnet:
 			config.NetworkPassphrase = PiMainnetPassphrase
 			config.HistoryArchiveURLs = PiMainnetHistoryArchiveURLs
