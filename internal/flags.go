@@ -833,7 +833,7 @@ func Flags() (*Config, support.ConfigOptions) {
 					val = PiTestnet2
 				}
 				if val != "" && val != StellarPubnet && val != StellarTestnet && val != StellarFuturenet &&
-					val != PiTestnet1 && val != PiTestnet2 {
+ 					val != PiTestnet1 && val != PiTestnet2 && val != PiMainnet {
 					return fmt.Errorf("invalid network %s. Use '%s', '%s', '%s', '%s', '%s', or '%s'",
 						val, StellarPubnet, StellarTestnet, StellarFuturenet, PiTestnet1, PiTestnet2, PiMainnet)
 				}
