@@ -50,7 +50,6 @@ services:
     platform: linux/amd64
     depends_on:
       - horizon-postgres
-      - pi-core
     build:
       context: ..
       dockerfile: docker/Dockerfile.dev
@@ -59,10 +58,13 @@ services:
     restart: on-failure
     ports:
       - "8000:8000"
+    volumes:
+      - ./captive-core-mainnet.cfg:/captive-core-mainnet.cfg:ro
     environment:
       - NETWORK=pimainnet
       - DATABASE_URL=postgres://postgres@horizon-postgres:5432/horizon?sslmode=disable
       - STELLAR_CORE_URL=http://localhost:11626
+      - CAPTIVE_CORE_CONFIG_PATH=/captive-core-mainnet.cfg
       - STELLAR_CORE_VERSION=23*
       - INGEST=true
       - DISABLE_TX_SUB=true
