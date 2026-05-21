@@ -26,7 +26,7 @@ services:
         STELLAR_CORE_VERSION: "23*"
     restart: on-failure
     ports:
-      - "8000:8000"
+      - "8002:8000"
     volumes:
       - ./captive-core-mainnet.cfg:/captive-core-mainnet.cfg:ro
     environment:
