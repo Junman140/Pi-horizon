@@ -97,7 +97,7 @@ var (
 
 	// PiTestnet2HistoryArchiveURLs is a list of history archive URLs for Pi Network testnet2.
 	PiTestnet2HistoryArchiveURLs = []string{
-		"https://history.temp.testnet2.minepi.com/",
+		"http://history.temp.testnet2.minepi.com/",
 	}
 
 	// PiTestnetHistoryArchiveURLs is DEPRECATED: kept for backward compatibility, points to testnet2.
