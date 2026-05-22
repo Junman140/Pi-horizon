@@ -39,8 +39,7 @@ services:
       - DATABASE_URL=postgres://postgres@horizon-postgres:5432/horizon?sslmode=disable
 
       # === Pi Node (stellar-core) connection ===
-      # Point to your Pi Node's stellar-core HTTP port
-      - STELLAR_CORE_URL=http://pi-node:11626
+      - STELLAR_CORE_URL=http://testnet2:11626
 
       # === Ingest (read-only, no tx submission) ===
       - INGEST=true
@@ -50,8 +49,14 @@ services:
       - PER_HOUR_RATE_LIMIT=0
 
     command: ["--apply-migrations"]
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - pi-network
+
+networks:
+  pi-network:
+    external: true
+    name: pi-network_default
 
 volumes:
   horizon-db-data:
